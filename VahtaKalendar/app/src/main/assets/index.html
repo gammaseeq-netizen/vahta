@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Календарь вахт</title>
+<style>
+:root{
+  --bg:#f3f6fc;--card:#ffffff;--line:#e4e9f3;--text:#0e1a33;--muted:#6a7690;
+  --blue:#3b82f6;--blue-d:#2563eb;--field:#ffffff;
+  --w-bg:linear-gradient(160deg,#cfe1fd,#b4d0fb);--w-fg:#0f2a5c;--w-dot:#3b82f6;
+  --r-bg:linear-gradient(160deg,#fbd5ae,#f7bc86);--r-fg:#5a2d05;--r-dot:#ea7a1c;
+  --o-bg:#eef1f7;
+  --shadow:0 2px 10px rgba(30,50,100,.06);
+}
+:root[data-theme="dark"]{
+  --bg:#0d111b;--card:#171d2b;--line:#262e42;--text:#eef2fb;--muted:#8d98b3;
+  --field:#1d2434;
+  --w-bg:linear-gradient(160deg,#3f86f7,#2563d9);--w-fg:#ffffff;--w-dot:#b3d0ff;
+  --r-bg:linear-gradient(160deg,#f7a64f,#ee8a2f);--r-fg:#2a1300;--r-dot:#7a3a00;
+  --o-bg:#1d2434;
+  --shadow:none;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  transition:background .25s,color .25s;
+}
+.app{max-width:560px;margin:0 auto;padding:16px 16px 110px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{
+  width:46px;height:46px;border-radius:14px;display:grid;place-items:center;
+  background:linear-gradient(145deg,#5b8cff,#3b5bf0);color:#fff;
+}
+h1{font-size:25px;margin:0;font-weight:800;letter-spacing:.2px}
+.theme-btn{
+  width:46px;height:46px;border-radius:14px;border:1px solid var(--line);
+  background:var(--card);color:var(--text);display:grid;place-items:center;cursor:pointer;
+}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.card h2{margin:0 0 12px;font-size:19px;font-weight:700}
+.screen{display:none}
+.screen.on{display:block}
+
+/* ---------- Форма ---------- */
+.f3{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:10px;margin-bottom:10px}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.fld label{display:block;font-size:13px;color:var(--muted);margin:0 0 6px 2px}
+.fld input,.fld select{
+  width:100%;height:50px;border-radius:14px;border:1px solid var(--line);background:var(--field);
+  color:var(--text);font-size:16px;padding:0 12px;outline:none;font-family:inherit;min-width:0;
+}
+.fld input:focus,.fld select:focus{border-color:var(--blue)}
+input[type=date],input[type=time]{color-scheme:light}
+:root[data-theme="dark"] input[type=date],:root[data-theme="dark"] input[type=time]{color-scheme:dark}
+.apply{
+  width:100%;height:52px;border:0;border-radius:15px;background:linear-gradient(180deg,#4b8dfa,#2f78f2);
+  color:#fff;font-size:17px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.apply:active{transform:scale(.985)}
+.error{color:#ef5350;font-size:14px;margin:0 0 10px;display:none}
+
+/* ---------- Календарь ---------- */
+.nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.nav .title{font-size:21px;font-weight:700}
+.nb{width:44px;height:44px;border-radius:13px;border:1px solid var(--line);background:var(--card);color:var(--text);display:grid;place-items:center;cursor:pointer}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--o-bg);border-radius:13px;padding:4px;margin-bottom:12px}
+.seg button{height:36px;border:0;border-radius:10px;background:transparent;color:var(--muted);font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+.seg button.on{background:var(--card);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.wk{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;font-size:14px;color:var(--text);font-weight:500;margin-bottom:8px}
+.grid7{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.t{
+  height:50px;border-radius:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  font-size:17px;font-weight:600;background:var(--o-bg);color:var(--text);
+  font-variant-numeric:tabular-nums;
+}
+.t i{width:5px;height:5px;border-radius:50%;background:transparent;display:block}
+.t.work{background:var(--w-bg);color:var(--w-fg)}
+.t.work i{background:var(--w-dot)}
+.t.rest{background:var(--r-bg);color:var(--r-fg)}
+.t.rest i{background:var(--r-dot)}
+.t.out{opacity:.42}
+.t.today{opacity:1;box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--blue)}
+.legend{display:flex;gap:18px;font-size:14px;color:var(--muted);margin-top:14px;align-items:center;flex-wrap:wrap}
+.legend span{display:flex;align-items:center;gap:7px}
+.legend b{display:inline-block;width:20px;height:20px;border-radius:7px}
+.legend .lw{background:var(--w-bg);background-color:var(--blue)}
+.legend .lr{background:var(--r-bg)}
+.legend .lt{border-radius:50%;border:2px solid var(--blue);box-shadow:inset 0 0 0 3px var(--card)}
+
+.yr{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mini{background:var(--o-bg);border-radius:16px;padding:8px 5px 9px;cursor:pointer;min-width:0}
+.mini:active{transform:scale(.97)}
+.mini h4{margin:0 0 5px;text-align:center;font-size:14px;font-weight:700}
+.mini .mw,.mini .mg{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+.mini .mw{font-size:9px;color:var(--muted);margin-bottom:3px}
+.mini .t{height:19px;font-size:10px;border-radius:6px;gap:0;background:transparent}
+.mini .t i{display:none}
+.mini .t.work{background:var(--w-bg)}
+.mini .t.rest{background:var(--r-bg)}
+.mini .t.today{box-shadow:0 0 0 1.5px var(--blue)}
+
+/* ---------- Карточки-инфо ---------- */
+.row-card{display:flex;align-items:center;gap:12px;padding:14px 16px}
+.row-card .ic{
+  width:44px;height:44px;border-radius:13px;display:grid;place-items:center;
+  background:rgba(59,130,246,.12);color:var(--blue);flex:none;
+}
+.rc-m{flex:1;min-width:0}
+.rc-m b{display:block;font-size:16px}
+.rc-m span{display:block;font-size:14px;color:var(--muted);margin-top:2px}
+.rc-r{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);line-height:1.25}
+.go{cursor:pointer}
+.go svg.chev{color:var(--muted);flex:none}
+.note{color:var(--muted);text-align:center;font-size:15px}
+
+/* ---------- Нижнее меню ---------- */
+.tabbar{
+  position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);
+  display:grid;grid-template-columns:repeat(3,1fr);padding:8px 8px 10px;z-index:5;
+}
+.tab{border:0;background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px;
+  font-size:13px;font-family:inherit;padding:6px 0;cursor:pointer;position:relative}
+.tab.on{color:var(--blue)}
+.tab.on::after{content:"";position:absolute;bottom:-2px;width:34px;height:3px;border-radius:3px;background:var(--blue)}
+.about p{color:var(--muted);line-height:1.5;margin:8px 0 0;font-size:15px}
+.about h2{margin-bottom:4px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="logo"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M8 14h2M12 14h2M16 14h.01M8 18h2M12 18h2"/></svg></div>
+      <h1 data-i="app">Календарь Вахт</h1>
+    </div>
+    <button class="theme-btn" id="themeBtn" aria-label="theme"></button>
+  </header>
+
+  <!-- ЭКРАН: КАЛЕНДАРЬ -->
+  <main id="scrCal" class="screen on">
+    <section class="card">
+      <h2 data-i="setup">Настройка графика</h2>
+      <div class="f3">
+        <div class="fld"><label for="start" data-i="start">Начало вахты</label><input type="date" id="start"></div>
+        <div class="fld"><label for="work" data-i="wd">Дней вахты</label><input type="number" id="work" min="1" max="365" inputmode="numeric"></div>
+        <div class="fld"><label for="rest" data-i="rd">Дней отдыха</label><input type="number" id="rest" min="1" max="365" inputmode="numeric"></div>
+      </div>
+      <div class="f2">
+        <div class="fld"><label for="ws" data-i="ws">Начало рабочего дня</label><input type="time" id="ws"></div>
+        <div class="fld"><label for="we" data-i="we">Конец рабочего дня</label><input type="time" id="we"></div>
+      </div>
+      <div class="error" id="err"></div>
+      <button class="apply" id="apply"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span data-i="apply">Применить график</span></button>
+    </section>
+
+    <section class="card" id="calCard">
+      <div class="seg"><button id="segM" data-i="month">Месяц</button><button id="segY" data-i="year">Год</button></div>
+      <div class="nav">
+        <button class="nb" id="prev" aria-label="prev"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="title" id="calTitle"></div>
+        <button class="nb" id="next" aria-label="next"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+      </div>
+      <div id="cal"></div>
+      <div class="legend"><span><b class="lw"></b><em style="font-style:normal" data-i="lw">Вахта</em></span><span><b class="lr"></b><em style="font-style:normal" data-i="lr">Отдых</em></span><span><b class="lt"></b><em style="font-style:normal" data-i="lt">Сегодня</em></span></div>
+    </section>
+
+    <div id="info"></div>
+  </main>
+
+  <!-- ЭКРАН: НАСТРОЙКИ -->
+  <main id="scrSet" class="screen">
+    <section class="card">
+      <h2 data-i="lang">Язык</h2>
+      <div class="fld"><select id="langSel"><option value="auto"></option><option value="ru">Русский</option><option value="uk">Українська</option></select></div>
+    </section>
+    <section class="card about">
+      <h2 data-i="widgetT">Виджет</h2>
+      <p data-i="widgetHint"></p>
+    </section>
+  </main>
+
+  <!-- ЭКРАН: О ПРОГРАММЕ -->
+  <main id="scrAbout" class="screen">
+    <section class="card about">
+      <h2 data-i="aboutT">Календарь вахт</h2>
+      <p data-i="aboutP"></p>
+      <p>v1.0</p>
+    </section>
+  </main>
+</div>
+
+<nav class="tabbar">
+  <button class="tab on" data-tab="scrCal"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span data-i="nCal">Календарь</span></button>
+  <button class="tab" data-tab="scrSet"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span data-i="nSet">Настройки</span></button>
+  <button class="tab" data-tab="scrAbout"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/></svg><span data-i="nAbout">О программе</span></button>
+</nav>
+
+<script>
+const I18N={
+  ru:{
+    app:"Календарь Вахт",setup:"Настройка графика",start:"Начало вахты",wd:"Дней вахты",rd:"Дней отдыха",
+    ws:"Начало рабочего дня",we:"Конец рабочего дня",apply:"Применить график",
+    err:"Укажите дату начала, дни вахты и дни отдыха",errT:"Укажите и начало, и конец рабочего дня (или оставьте оба поля пустыми)",
+    month:"Месяц",year:"Год",lw:"Вахта",lr:"Отдых",lt:"Сегодня",
+    cycle:"Текущий цикл",wl:"вахты",rl:"отдыха",shift:"Смена",dayOf:"День {x}|из {n}",
+    next:"Следующая смена",nextRest:"начало отдыха",nextWork:"начало вахты",
+    nCal:"Календарь",nSet:"Настройки",nAbout:"О программе",lang:"Язык",auto:"Как в системе",
+    widgetT:"Виджет",widgetHint:"Чтобы добавить виджет: зажмите пустое место на рабочем столе, выберите «Виджеты» и найдите «Календарь вахт».",
+    aboutT:"Календарь вахт",aboutP:"Показывает график вахты и отдыха. Виджет на рабочем столе считает дни до вахты или до выходных и время до конца рабочего дня.",
+    noCfg:"Задайте график, чтобы увидеть цикл",
+    days:["день","дня","дней"],
+    months:["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"],
+    mshort:["Янв","Фев","Мар","Апр","Май","Июн","Июл","Авг","Сен","Окт","Ноя","Дек"],
+    wdays:["Пн","Вт","Ср","Чт","Пт","Сб","Вс"]
+  },
+  uk:{
+    app:"Календар Вахт",setup:"Налаштування графіка",start:"Початок вахти",wd:"Днів вахти",rd:"Днів відпочинку",
+    ws:"Початок робочого дня",we:"Кінець робочого дня",apply:"Застосувати графік",
+    err:"Вкажіть дату початку, дні вахти та дні відпочинку",errT:"Вкажіть і початок, і кінець робочого дня (або залиште обидва поля порожніми)",
+    month:"Місяць",year:"Рік",lw:"Вахта",lr:"Відпочинок",lt:"Сьогодні",
+    cycle:"Поточний цикл",wl:"вахти",rl:"відпочинку",shift:"Зміна",dayOf:"День {x}|з {n}",
+    next:"Наступна зміна",nextRest:"початок відпочинку",nextWork:"початок вахти",
+    nCal:"Календар",nSet:"Налаштування",nAbout:"Про програму",lang:"Мова",auto:"Як у системі",
+    widgetT:"Віджет",widgetHint:"Щоб додати віджет: затисніть порожнє місце на робочому столі, виберіть «Віджети» та знайдіть «Календар вахт».",
+    aboutT:"Календар вахт",aboutP:"Показує графік вахти та відпочинку. Віджет на робочому столі рахує дні до вахти або до вихідних і час до кінця робочого дня.",
+    noCfg:"Задайте графік, щоб побачити цикл",
+    days:["день","дні","днів"],
+    months:["Січень","Лютий","Березень","Квітень","Травень","Червень","Липень","Серпень","Вересень","Жовтень","Листопад","Грудень"],
+    mshort:["Січ","Лют","Бер","Кві","Тра","Чер","Лип","Сер","Вер","Жов","Лис","Гру"],
+    wdays:["Пн","Вт","Ср","Чт","Пт","Сб","Нд"]
+  }
+};
+const KEY="vakhtCalendar.v2";
+const now0=new Date();
+let S={start:"",work:0,rest:0,ws:"",we:"",view:"month",year:now0.getFullYear(),month:now0.getMonth(),
+  theme:(window.matchMedia&&matchMedia("(prefers-color-scheme: light)").matches)?"light":"dark",lang:"auto"};
+try{const r=JSON.parse(localStorage.getItem(KEY)||"null");if(r)Object.assign(S,r)}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+const $=id=>document.getElementById(id);
+function curLang(){
+  if(S.lang==="ru"||S.lang==="uk")return S.lang;
+  const l=(navigator.language||"ru").toLowerCase();
+  return l.indexOf("uk")===0?"uk":"ru";
+}
+const T=()=>I18N[curLang()];
+const dayNum=(y,m,d)=>Math.floor(Date.UTC(y,m,d)/864e5);
+function parseISO(s){const p=(s||"").split("-").map(Number);return p.length===3&&p[0]?{y:p[0],m:p[1]-1,d:p[2]}:null}
+const f2=n=>String(n).padStart(2,"0");
+const fmtDate=d=>f2(d.getDate())+"."+f2(d.getMonth()+1)+"."+d.getFullYear();
+function pl(n,f){const m=n%100,k=n%10;if(m>10&&m<20)return f[2];if(k===1)return f[0];if(k>1&&k<5)return f[1];return f[2]}
+const toMin=v=>(v&&/^\d\d:\d\d/.test(v))?parseInt(v.slice(0,2),10)*60+parseInt(v.slice(3,5),10):-1;
+
+function cfgOk(){return !!parseISO(S.start)&&S.work>0&&S.rest>0}
+function pos(y,m,d){
+  const s=parseISO(S.start),cycle=S.work+S.rest;
+  const idx=dayNum(y,m,d)-dayNum(s.y,s.m,s.d);
+  return ((idx%cycle)+cycle)%cycle;
+}
+const isWork=(y,m,d)=>cfgOk()&&pos(y,m,d)<S.work;
+
+function sendToApp(){
+  try{
+    if(window.Android&&cfgOk())Android.saveSchedule(S.start,S.work,S.rest,toMin(S.ws),toMin(S.we));
+  }catch(e){}
+}
+
+/* ---------- Тема ---------- */
+const SUN='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f5a524" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2" fill="#f5a524"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>';
+const MOON='<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a.7.7 0 0 0-.9-.9A9.5 9.5 0 1 0 21.4 15.1a.7.7 0 0 0-.9-.9z"/></svg>';
+function applyTheme(){
+  document.documentElement.dataset.theme=S.theme;
+  $("themeBtn").innerHTML=S.theme==="dark"?MOON:SUN;
+  try{if(window.Android)Android.setTheme(S.theme==="dark")}catch(e){}
+}
+
+/* ---------- Статические тексты ---------- */
+function applyLang(){
+  const t=T();
+  document.documentElement.lang=curLang();
+  document.querySelectorAll("[data-i]").forEach(el=>{const k=el.getAttribute("data-i");if(t[k]!==undefined)el.textContent=t[k]});
+  const sel=$("langSel");sel.options[0].textContent=t.auto;sel.value=S.lang;
+}
+
+/* ---------- Календарь ---------- */
+function tile(d,inMonth,ty,tm,td){
+  const y=d.getFullYear(),m=d.getMonth(),n=d.getDate();
+  let c="t";
+  if(cfgOk())c+=isWork(y,m,n)?" work":" rest";
+  if(!inMonth)c+=" out";
+  if(y===ty&&m===tm&&n===td)c+=" today";
+  return '<div class="'+c+'">'+n+'<i></i></div>';
+}
+function renderCal(){
+  const t=T(),box=$("cal"),now=new Date(),ty=now.getFullYear(),tm=now.getMonth(),td=now.getDate();
+  $("segM").classList.toggle("on",S.view==="month");
+  $("segY").classList.toggle("on",S.view==="year");
+  let h="";
+  if(S.view==="month"){
+    $("calTitle").textContent=t.months[S.month]+" "+S.year;
+    h='<div class="wk">'+t.wdays.map(x=>'<span>'+x+'</span>').join("")+'</div><div class="grid7">';
+    const first=(new Date(S.year,S.month,1).getDay()+6)%7;
+    for(let i=0;i<42;i++){
+      const d=new Date(S.year,S.month,1-first+i);
+      h+=tile(d,d.getMonth()===S.month,ty,tm,td);
+    }
+    h+='</div>';
+  }else{
+    $("calTitle").textContent=S.year;
+    h='<div class="yr">';
+    for(let m=0;m<12;m++){
+      const first=(new Date(S.year,m,1).getDay()+6)%7,dim=new Date(S.year,m+1,0).getDate();
+      h+='<div class="mini" data-m="'+m+'"><h4>'+t.mshort[m]+'</h4><div class="mw">'+t.wdays.map(x=>'<span>'+x.charAt(0)+'</span>').join("")+'</div><div class="mg">';
+      for(let i=0;i<first;i++)h+='<div></div>';
+      for(let d=1;d<=dim;d++)h+=tile(new Date(S.year,m,d),true,ty,tm,td);
+      h+='</div></div>';
+    }
+    h+='</div>';
+  }
+  box.innerHTML=h;
+}
+
+const ICON_CAL='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M8 14h2M12 14h2M8 18h2M12 18h2"/></svg>';
+const ICON_CLOCK='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+const ICON_CHEV='<svg class="chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>';
+
+function renderInfo(){
+  const t=T(),el=$("info");
+  if(!cfgOk()){el.innerHTML='<div class="card note">'+t.noCfg+'</div>';return}
+  const d=new Date(),y=d.getFullYear(),m=d.getMonth(),n=d.getDate();
+  const p=pos(y,m,n),working=p<S.work,cycle=S.work+S.rest;
+  const x=working?p+1:p-S.work+1,tot=working?S.work:S.rest;
+  const left=working?S.work-p:cycle-p;
+  const nd=new Date(y,m,n+left);
+  const C=2*Math.PI*18,frac=Math.min(1,x/tot);
+  const hrs=(toMin(S.ws)>=0&&toMin(S.we)>=0)?'<span>'+t.shift+': '+S.ws+' – '+S.we+'</span>':'';
+  const ring='<svg width="46" height="46" viewBox="0 0 46 46"><circle cx="23" cy="23" r="18" fill="none" stroke="var(--line)" stroke-width="5"/><circle cx="23" cy="23" r="18" fill="none" stroke="var(--blue)" stroke-width="5" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*(1-frac))+'" transform="rotate(-90 23 23)"/></svg>';
+  const dayOf=t.dayOf.replace("{x}",x).replace("{n}",tot).split("|").join("<br>");
+  el.innerHTML=
+    '<div class="card row-card"><div class="ic">'+ICON_CAL+'</div><div class="rc-m"><b>'+t.cycle+'</b><span>'+S.work+' '+pl(S.work,t.days)+' '+t.wl+' / '+S.rest+' '+pl(S.rest,t.days)+' '+t.rl+'</span>'+hrs+'</div><div class="rc-r">'+ring+'<div>'+dayOf+'</div></div></div>'+
+    '<div class="card row-card go" id="goNext" data-y="'+nd.getFullYear()+'" data-m="'+nd.getMonth()+'"><div class="ic">'+ICON_CLOCK+'</div><div class="rc-m"><b>'+t.next+'</b><span>'+fmtDate(nd)+' ('+(working?t.nextRest:t.nextWork)+')</span></div>'+ICON_CHEV+'</div>';
+}
+
+function render(){applyLang();renderCal();renderInfo()}
+
+/* ---------- События ---------- */
+$("apply").onclick=()=>{
+  const s=$("start").value,w=parseInt($("work").value,10),r=parseInt($("rest").value,10);
+  const ws=$("ws").value,we=$("we").value,t=T(),err=$("err");
+  if(!s||!(w>0)||!(r>0)){err.textContent=t.err;err.style.display="block";return}
+  if((ws&&!we)||(!ws&&we)){err.textContent=t.errT;err.style.display="block";return}
+  err.style.display="none";
+  S.start=s;S.work=w;S.rest=r;S.ws=ws;S.we=we;
+  const p=parseISO(s);S.year=p.y;S.month=p.m;
+  save();render();sendToApp();
+};
+$("segM").onclick=()=>{S.view="month";save();render()};
+$("segY").onclick=()=>{S.view="year";save();render()};
+function step(n){
+  if(S.view==="year")S.year+=n;
+  else{S.month+=n;if(S.month<0){S.month=11;S.year--}if(S.month>11){S.month=0;S.year++}}
+  save();render();
+}
+$("prev").onclick=()=>step(-1);
+$("next").onclick=()=>step(1);
+$("themeBtn").onclick=()=>{S.theme=S.theme==="dark"?"light":"dark";save();applyTheme()};
+$("langSel").onchange=e=>{S.lang=e.target.value;save();render()};
+
+// тап по месяцу в режиме «Год» открывает этот месяц
+$("cal").addEventListener("click",e=>{
+  if(S.view!=="year")return;
+  const el=e.target.closest(".mini");
+  if(!el)return;
+  S.month=parseInt(el.dataset.m,10);S.view="month";
+  save();render();$("calCard").scrollIntoView({behavior:"smooth",block:"start"});
+});
+// тап по «Следующая смена» открывает месяц этой даты
+$("info").addEventListener("click",e=>{
+  const el=e.target.closest("#goNext");
+  if(!el)return;
+  S.year=parseInt(el.dataset.y,10);S.month=parseInt(el.dataset.m,10);S.view="month";
+  save();render();$("calCard").scrollIntoView({behavior:"smooth",block:"start"});
+});
+// нижнее меню
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===b));
+  document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id===b.dataset.tab));
+  window.scrollTo(0,0);
+});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)render()});
+
+// старт
+$("start").value=S.start||"";
+$("work").value=S.work||"";
+$("rest").value=S.rest||"";
+$("ws").value=S.ws||"";
+$("we").value=S.we||"";
+applyTheme();render();sendToApp();
+</script>
+</body>
+</html>

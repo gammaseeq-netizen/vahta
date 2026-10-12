@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Календар вахт</string>
+    <string name="widget_description">Дні до вахти або до вихідних і час до кінця робочого дня</string>
+    <string name="w_state_rest">Вихідні</string>
+    <string name="w_state_work">Робота</string>
+    <string name="w_until_work">До початку вахти залишилось:</string>
+    <string name="w_until_rest">До кінця вахти залишилось:</string>
+    <string name="w_left_work">Залишилось працювати:</string>
+    <string name="w_until_shift">До початку зміни:</string>
+    <string name="w_day_over">Робочий день завершено</string>
+    <string name="w_rest_from">Вихідні з:</string>
+    <string name="w_work_from">Вахта з:</string>
+    <string name="w_hm">%1$d год %2$d хв</string>
+    <string name="w_min">%1$d хв</string>
+    <string name="w_not_set_title">Календар вахт</string>
+    <string name="w_not_set_sub">Відкрийте застосунок і задайте графік</string>
+</resources>
