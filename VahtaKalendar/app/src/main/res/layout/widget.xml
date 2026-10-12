@@ -95,11 +95,12 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <View
+               <FrameLayout
             android:id="@+id/divider"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginTop="8dp"
+            android:layout_marginEnd="60dp"
             android:background="#33FFFFFF" />
 
         <LinearLayout
