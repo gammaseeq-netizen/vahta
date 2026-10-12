@@ -1,0 +1,39 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.5"
+
+      - name: Build debug APK
+        run: |
+          SETTINGS=$(find . -name settings.gradle.kts | head -n 1)
+          if [ -z "$SETTINGS" ]; then
+            echo "settings.gradle.kts не найден. Файлы в репозитории:"
+            find . -not -path "./.git/*" -type f
+            exit 1
+          fi
+          cd "$(dirname "$SETTINGS")"
+          echo "Собираю проект в: $(pwd)"
+          gradle assembleDebug --no-daemon --stacktrace
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vakht-calendar-apk
+          path: "**/app-debug.apk"
+          if-no-files-found: error
