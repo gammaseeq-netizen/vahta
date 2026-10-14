@@ -2,6 +2,7 @@ package com.vakht.calendar
 
 import android.app.Activity
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
@@ -14,10 +15,11 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        applyBars(this, true)
+        val dark = systemIsDark(this)
+        applyBars(this, dark)
 
         web = WebView(this)
-        web.setBackgroundColor(Color.parseColor("#0D111B"))
+        web.setBackgroundColor(Color.parseColor(if (dark) "#0D111B" else "#F3F6FC"))
         web.settings.javaScriptEnabled = true
         web.settings.domStorageEnabled = true
         web.addJavascriptInterface(Bridge(this), "Android")
@@ -27,10 +29,13 @@ class MainActivity : Activity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        if (web.canGoBack()) web.goBack() else super.onBackPressed()
+        // Сначала закрываем открытые окна настроек, и только потом выходим
+        web.evaluateJavascript("(window.closeTop?window.closeTop():false)") { r ->
+            if (r != "true") finish()
+        }
     }
 
-    /** Мост JS -> Android: сохраняет график, обновляет виджет и цвет системных панелей. */
+    /** Мост JS -> Android. */
     class Bridge(private val act: Activity) {
 
         @JavascriptInterface
@@ -46,12 +51,29 @@ class MainActivity : Activity() {
             VakhtWidget.refreshAll(ctx)
         }
 
+        /** Язык и частота обновления виджета из настроек. */
+        @JavascriptInterface
+        fun setPrefs(lang: String, intervalMin: Int) {
+            val ctx = act.applicationContext
+            ctx.getSharedPreferences("vakht", Context.MODE_PRIVATE).edit()
+                .putString("lang", lang)
+                .putInt("interval", intervalMin)
+                .apply()
+            VakhtWidget.refreshAll(ctx)
+        }
+
+        @JavascriptInterface
+        fun isSystemDark(): Boolean = systemIsDark(act)
+
         @JavascriptInterface
         fun setTheme(dark: Boolean) {
             act.runOnUiThread { applyBars(act, dark) }
         }
     }
 }
+
+fun systemIsDark(ctx: Context): Boolean =
+    (ctx.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 
 @Suppress("DEPRECATION")
 fun applyBars(act: Activity, dark: Boolean) {

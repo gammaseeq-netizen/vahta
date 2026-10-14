@@ -11,8 +11,6 @@
     <string name="w_day_over">Рабочий день завершён</string>
     <string name="w_rest_from">Выходные с:</string>
     <string name="w_work_from">Вахта с:</string>
-    <string name="w_hm">%1$d ч %2$d мин</string>
-    <string name="w_min">%1$d мин</string>
     <string name="w_not_set_title">Календарь вахт</string>
     <string name="w_not_set_sub">Откройте приложение и задайте график</string>
 </resources>

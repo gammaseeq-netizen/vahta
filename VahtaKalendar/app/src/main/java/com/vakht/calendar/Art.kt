@@ -62,83 +62,88 @@ object Art {
         return bmp
     }
 
-    /** Облако с солнцем (выходные). */
+    /** Облако с солнцем (отдых). Всё нарисовано внутри холста, чтобы не было обрезанных краёв. */
     fun cloud(): Bitmap {
-        val w = 480
-        val h = 360
-        val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val s = 360
+        val f = s.toFloat()
+        val bmp = Bitmap.createBitmap(s, s, Bitmap.Config.ARGB_8888)
         val c = Canvas(bmp)
 
-        val sx = w * 0.68f
-        val sy = h * 0.28f
-        val sr = h * 0.32f
+        // солнечное свечение
+        val sx = f * 0.68f
+        val sy = f * 0.30f
+        val sr = f * 0.28f
         val sun = Paint(Paint.ANTI_ALIAS_FLAG)
         sun.shader = RadialGradient(
             sx, sy, sr,
-            intArrayOf(Color.argb(255, 255, 238, 170), Color.argb(130, 255, 214, 120), Color.argb(0, 255, 214, 120)),
-            floatArrayOf(0f, 0.45f, 1f),
+            intArrayOf(
+                Color.argb(255, 255, 240, 180),
+                Color.argb(150, 255, 214, 120),
+                Color.argb(0, 255, 214, 120)
+            ),
+            floatArrayOf(0f, 0.5f, 1f),
             Shader.TileMode.CLAMP
         )
         c.drawCircle(sx, sy, sr, sun)
 
-        fun blob(cx: Float, cy: Float, r: Float, a: Int) {
-            val p = Paint(Paint.ANTI_ALIAS_FLAG)
-            p.shader = RadialGradient(
-                cx - r * 0.3f, cy - r * 0.4f, r * 1.4f,
-                Color.argb(a, 255, 255, 255), Color.argb(a, 170, 210, 255),
-                Shader.TileMode.CLAMP
+        fun drawCloud(p: Paint, dy: Float) {
+            c.drawCircle(f * 0.32f, f * 0.60f + dy, f * 0.14f, p)
+            c.drawCircle(f * 0.50f, f * 0.50f + dy, f * 0.21f, p)
+            c.drawCircle(f * 0.70f, f * 0.58f + dy, f * 0.15f, p)
+            c.drawRoundRect(
+                RectF(f * 0.14f, f * 0.58f + dy, f * 0.86f, f * 0.80f + dy),
+                f * 0.11f, f * 0.11f, p
             )
-            p.maskFilter = BlurMaskFilter(5f, BlurMaskFilter.Blur.NORMAL)
-            c.drawCircle(cx, cy, r, p)
         }
 
-        blob(w * 0.58f, h * 0.50f, h * 0.20f, 225)
-        blob(w * 0.78f, h * 0.52f, h * 0.17f, 225)
-        blob(w * 0.42f, h * 0.58f, h * 0.15f, 225)
-        blob(w * 0.30f, h * 0.76f, h * 0.16f, 245)
-        blob(w * 0.50f, h * 0.72f, h * 0.22f, 245)
-        blob(w * 0.72f, h * 0.76f, h * 0.18f, 245)
-        blob(w * 0.88f, h * 0.80f, h * 0.12f, 245)
+        // мягкая тень
+        val shadow = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.argb(70, 20, 70, 160)
+            maskFilter = BlurMaskFilter(f * 0.03f, BlurMaskFilter.Blur.NORMAL)
+        }
+        drawCloud(shadow, f * 0.03f)
 
-        val base = Paint(Paint.ANTI_ALIAS_FLAG)
-        base.shader = LinearGradient(
-            0f, h * 0.74f, 0f, h * 0.92f,
-            Color.argb(245, 235, 247, 255), Color.argb(245, 170, 210, 255),
+        // тело облака: один общий градиент на все части, поэтому швов нет
+        val body = Paint(Paint.ANTI_ALIAS_FLAG)
+        body.shader = LinearGradient(
+            0f, f * 0.29f, 0f, f * 0.80f,
+            Color.argb(255, 255, 255, 255),
+            Color.argb(255, 196, 224, 255),
             Shader.TileMode.CLAMP
         )
-        c.drawRoundRect(RectF(w * 0.22f, h * 0.74f, w * 0.92f, h * 0.92f), 40f, 40f, base)
+        drawCloud(body, 0f)
         return bmp
     }
 
     /** Светящийся портфель (вахта). */
     fun briefcase(): Bitmap {
-        val w = 480
-        val h = 360
-        val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val s = 360
+        val f = s.toFloat()
+        val bmp = Bitmap.createBitmap(s, s, Bitmap.Config.ARGB_8888)
         val c = Canvas(bmp)
 
-        val body = RectF(w * 0.24f, h * 0.34f, w * 0.84f, h * 0.88f)
-        val handle = RectF(w * 0.42f, h * 0.14f, w * 0.66f, h * 0.42f)
+        val body = RectF(f * 0.14f, f * 0.38f, f * 0.86f, f * 0.88f)
+        val handle = RectF(f * 0.35f, f * 0.16f, f * 0.65f, f * 0.44f)
 
         // свечение
         val glow = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.argb(130, 70, 190, 255)
-            maskFilter = BlurMaskFilter(34f, BlurMaskFilter.Blur.NORMAL)
+            maskFilter = BlurMaskFilter(22f, BlurMaskFilter.Blur.NORMAL)
         }
-        c.drawRoundRect(body, 36f, 36f, glow)
+        c.drawRoundRect(body, 34f, 34f, glow)
         val glowH = Paint(glow).apply {
             style = Paint.Style.STROKE
-            strokeWidth = 22f
+            strokeWidth = 20f
         }
-        c.drawRoundRect(handle, 24f, 24f, glowH)
+        c.drawRoundRect(handle, 22f, 22f, glowH)
 
         // ручка
         val hp = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.STROKE
-            strokeWidth = 16f
+            strokeWidth = 15f
             color = Color.argb(215, 150, 215, 255)
         }
-        c.drawRoundRect(handle, 24f, 24f, hp)
+        c.drawRoundRect(handle, 22f, 22f, hp)
 
         // корпус
         val bp = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -147,24 +152,24 @@ object Art {
             Color.argb(225, 125, 205, 255), Color.argb(225, 28, 98, 205),
             Shader.TileMode.CLAMP
         )
-        c.drawRoundRect(body, 36f, 36f, bp)
+        c.drawRoundRect(body, 34f, 34f, bp)
 
         val outline = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.STROKE
             strokeWidth = 4f
             color = Color.argb(170, 255, 255, 255)
         }
-        c.drawRoundRect(body, 36f, 36f, outline)
+        c.drawRoundRect(body, 34f, 34f, outline)
 
         // ремень
         val belt = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb(90, 10, 40, 110) }
-        c.drawRect(RectF(body.left, h * 0.58f, body.right, h * 0.63f), belt)
+        c.drawRect(RectF(body.left, f * 0.60f, body.right, f * 0.65f), belt)
 
         // застёжки
         val clasp = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb(210, 215, 238, 255) }
-        c.drawRoundRect(RectF(w * 0.29f, h * 0.55f, w * 0.34f, h * 0.68f), 8f, 8f, clasp)
-        c.drawRoundRect(RectF(w * 0.74f, h * 0.55f, w * 0.79f, h * 0.68f), 8f, 8f, clasp)
-        c.drawRoundRect(RectF(w * 0.50f, h * 0.55f, w * 0.58f, h * 0.70f), 8f, 8f, clasp)
+        c.drawRoundRect(RectF(f * 0.21f, f * 0.57f, f * 0.27f, f * 0.70f), 8f, 8f, clasp)
+        c.drawRoundRect(RectF(f * 0.73f, f * 0.57f, f * 0.79f, f * 0.70f), 8f, 8f, clasp)
+        c.drawRoundRect(RectF(f * 0.46f, f * 0.57f, f * 0.54f, f * 0.72f), 8f, 8f, clasp)
         return bmp
     }
 }

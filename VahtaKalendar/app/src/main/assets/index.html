@@ -8,7 +8,7 @@
 <style>
 :root{
   --bg:#f3f6fc;--card:#ffffff;--line:#e4e9f3;--text:#0e1a33;--muted:#6a7690;
-  --blue:#3b82f6;--blue-d:#2563eb;--field:#ffffff;
+  --blue:#3b82f6;--field:#ffffff;
   --w-bg:linear-gradient(160deg,#cfe1fd,#b4d0fb);--w-fg:#0f2a5c;--w-dot:#3b82f6;
   --r-bg:linear-gradient(160deg,#fbd5ae,#f7bc86);--r-fg:#5a2d05;--r-dot:#ea7a1c;
   --o-bg:#eef1f7;
@@ -29,22 +29,18 @@ body{
   font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   transition:background .25s,color .25s;
 }
-.app{max-width:560px;margin:0 auto;padding:16px 16px 110px}
+.app{max-width:560px;margin:0 auto;padding:16px 16px 40px}
 header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.brand{display:flex;align-items:center;gap:12px}
-.logo{
-  width:46px;height:46px;border-radius:14px;display:grid;place-items:center;
-  background:linear-gradient(145deg,#5b8cff,#3b5bf0);color:#fff;
-}
-h1{font-size:25px;margin:0;font-weight:800;letter-spacing:.2px}
-.theme-btn{
-  width:46px;height:46px;border-radius:14px;border:1px solid var(--line);
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.logo{width:48px;height:48px;border-radius:50%;flex:none;display:block}
+h1{font-size:24px;margin:0;font-weight:800;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gear{
+  width:46px;height:46px;border-radius:14px;border:1px solid var(--line);flex:none;
   background:var(--card);color:var(--text);display:grid;place-items:center;cursor:pointer;
 }
+.gear:active{transform:scale(.95)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
 .card h2{margin:0 0 12px;font-size:19px;font-weight:700}
-.screen{display:none}
-.screen.on{display:block}
 
 /* ---------- Форма ---------- */
 .f3{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:10px;margin-bottom:10px}
@@ -76,7 +72,7 @@ input[type=date],input[type=time]{color-scheme:light}
 .t{
   height:50px;border-radius:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
   font-size:17px;font-weight:600;background:var(--o-bg);color:var(--text);
-  font-variant-numeric:tabular-nums;
+  font-variant-numeric:tabular-nums;position:relative;
 }
 .t i{width:5px;height:5px;border-radius:50%;background:transparent;display:block}
 .t.work{background:var(--w-bg);color:var(--w-fg)}
@@ -85,11 +81,21 @@ input[type=date],input[type=time]{color-scheme:light}
 .t.rest i{background:var(--r-dot)}
 .t.out{opacity:.42}
 .t.today{opacity:1;box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--blue)}
+
+/* мигание даты следующей смены */
+@keyframes blink{
+  0%,100%{transform:scale(1);box-shadow:0 0 0 0 transparent}
+  50%{transform:scale(1.16);box-shadow:0 0 0 4px var(--glow),0 0 20px 8px var(--glow)}
+}
+.t.blink{animation:blink .75s ease-in-out 5;z-index:2;opacity:1}
+.t.blink.work{--glow:rgba(59,130,246,.85)}
+.t.blink.rest{--glow:rgba(255,140,30,.9)}
+
 .legend{display:flex;gap:18px;font-size:14px;color:var(--muted);margin-top:14px;align-items:center;flex-wrap:wrap}
 .legend span{display:flex;align-items:center;gap:7px}
 .legend b{display:inline-block;width:20px;height:20px;border-radius:7px}
-.legend .lw{background:var(--w-bg);background-color:var(--blue)}
-.legend .lr{background:var(--r-bg)}
+.legend .lw{background:var(--blue)}
+.legend .lr{background:#f6a45a}
 .legend .lt{border-radius:50%;border:2px solid var(--blue);box-shadow:inset 0 0 0 3px var(--card)}
 
 .yr{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -115,34 +121,62 @@ input[type=date],input[type=time]{color-scheme:light}
 .rc-m span{display:block;font-size:14px;color:var(--muted);margin-top:2px}
 .rc-r{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);line-height:1.25}
 .go{cursor:pointer}
+.go:active{transform:scale(.99)}
 .go svg.chev{color:var(--muted);flex:none}
 .note{color:var(--muted);text-align:center;font-size:15px}
 
-/* ---------- Нижнее меню ---------- */
-.tabbar{
-  position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);
-  display:grid;grid-template-columns:repeat(3,1fr);padding:8px 8px 10px;z-index:5;
+/* ---------- Окна (настройки, о программе) ---------- */
+.ov{position:fixed;top:0;left:0;right:0;bottom:0;z-index:20;display:none;align-items:flex-end;justify-content:center;background:rgba(5,10,25,.55)}
+.ov.on{display:flex}
+.sheet{
+  width:100%;max-width:560px;max-height:92vh;overflow:auto;background:var(--card);
+  border-radius:26px 26px 0 0;padding:18px 16px 28px;animation:up .22s ease-out;
 }
-.tab{border:0;background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px;
-  font-size:13px;font-family:inherit;padding:6px 0;cursor:pointer;position:relative}
-.tab.on{color:var(--blue)}
-.tab.on::after{content:"";position:absolute;bottom:-2px;width:34px;height:3px;border-radius:3px;background:var(--blue)}
-.about p{color:var(--muted);line-height:1.5;margin:8px 0 0;font-size:15px}
-.about h2{margin-bottom:4px}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.sh-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.sh-h h2{margin:0;font-size:22px}
+.x{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--field);color:var(--text);display:grid;place-items:center;cursor:pointer}
+.sec{margin-bottom:20px}
+.sec h3{margin:0 0 8px 2px;font-size:14px;color:var(--muted);font-weight:600}
+.opts{display:grid;gap:8px}
+.opt{
+  display:flex;align-items:center;gap:12px;height:52px;padding:0 14px;border-radius:14px;
+  border:1.5px solid var(--line);background:var(--field);color:var(--text);font-size:16px;font-weight:600;
+  cursor:pointer;font-family:inherit;text-align:left;width:100%;
+}
+.opt.on{border-color:var(--blue);background:rgba(59,130,246,.12)}
+.opt .ck{margin-left:auto;color:var(--blue);display:none}
+.opt.on .ck{display:block}
+.flag{width:32px;height:22px;border-radius:5px;overflow:hidden;flex:none;box-shadow:0 0 0 1px rgba(0,0,0,.18);display:block}
+.globe{width:32px;height:22px;display:grid;place-items:center;flex:none;color:var(--muted)}
+.seg3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.seg3 .opt{justify-content:center;padding:0 6px;font-size:15px;height:48px;text-align:center}
+.hint{font-size:13px;color:var(--muted);margin:8px 2px 0;line-height:1.45}
+.aboutbtn{
+  width:100%;height:54px;border-radius:14px;border:1.5px solid var(--line);background:var(--field);color:var(--text);
+  display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:16px;font-weight:600;
+  cursor:pointer;font-family:inherit;
+}
+.about-top{text-align:center;margin:4px 0 14px}
+.about-top img{width:112px;height:112px;border-radius:50%;display:block;margin:0 auto 10px}
+.about-top b{display:block;font-size:22px}
+.about-top span{display:block;color:var(--muted);font-size:14px;margin-top:3px}
+.about-p{color:var(--muted);line-height:1.55;font-size:15px;margin:0 0 12px}
 </style>
 </head>
 <body>
 <div class="app">
   <header>
     <div class="brand">
-      <div class="logo"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M8 14h2M12 14h2M16 14h.01M8 18h2M12 18h2"/></svg></div>
+      <img class="logo" src="logo.png" alt="">
       <h1 data-i="app">Календарь Вахт</h1>
     </div>
-    <button class="theme-btn" id="themeBtn" aria-label="theme"></button>
+    <button class="gear" id="gearBtn" aria-label="settings">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </button>
   </header>
 
-  <!-- ЭКРАН: КАЛЕНДАРЬ -->
-  <main id="scrCal" class="screen on">
+  <main>
     <section class="card">
       <h2 data-i="setup">Настройка графика</h2>
       <div class="f3">
@@ -171,36 +205,50 @@ input[type=date],input[type=time]{color-scheme:light}
 
     <div id="info"></div>
   </main>
-
-  <!-- ЭКРАН: НАСТРОЙКИ -->
-  <main id="scrSet" class="screen">
-    <section class="card">
-      <h2 data-i="lang">Язык</h2>
-      <div class="fld"><select id="langSel"><option value="auto"></option><option value="ru">Русский</option><option value="uk">Українська</option></select></div>
-    </section>
-    <section class="card about">
-      <h2 data-i="widgetT">Виджет</h2>
-      <p data-i="widgetHint"></p>
-    </section>
-  </main>
-
-  <!-- ЭКРАН: О ПРОГРАММЕ -->
-  <main id="scrAbout" class="screen">
-    <section class="card about">
-      <h2 data-i="aboutT">Календарь вахт</h2>
-      <p data-i="aboutP"></p>
-      <p>v1.0</p>
-    </section>
-  </main>
 </div>
 
-<nav class="tabbar">
-  <button class="tab on" data-tab="scrCal"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span data-i="nCal">Календарь</span></button>
-  <button class="tab" data-tab="scrSet"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span data-i="nSet">Настройки</span></button>
-  <button class="tab" data-tab="scrAbout"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/></svg><span data-i="nAbout">О программе</span></button>
-</nav>
+<!-- Настройки -->
+<div class="ov" id="ovSet">
+  <div class="sheet" role="dialog">
+    <div class="sh-h">
+      <h2 data-i="settings">Настройки</h2>
+      <button class="x" id="xSet" aria-label="close"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="sec"><h3 data-i="language">Язык</h3><div class="opts" id="langOpts"></div></div>
+    <div class="sec"><h3 data-i="theme">Тема</h3><div class="seg3" id="themeOpts"></div></div>
+    <div class="sec">
+      <h3 data-i="widgetRefresh">Частота обновления виджета</h3>
+      <div class="fld"><select id="intSel"></select></div>
+      <p class="hint" data-i="refreshHint"></p>
+    </div>
+    <button class="aboutbtn" id="openAbout"><span data-i="about">О программе</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+  </div>
+</div>
+
+<!-- О программе -->
+<div class="ov" id="ovAbout">
+  <div class="sheet" role="dialog">
+    <div class="sh-h">
+      <h2 data-i="about">О программе</h2>
+      <button class="x" id="xAbout" aria-label="close"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="about-top">
+      <img src="logo.png" alt="">
+      <b>Вахтовик</b>
+      <span data-i="tagline">Календарь смен и отдыха</span>
+    </div>
+    <p class="about-p" data-i="aboutP"></p>
+    <p class="about-p" data-i="aboutW"></p>
+    <p class="about-p"><span data-i="version">Версия</span> 1.1</p>
+  </div>
+</div>
 
 <script>
+const FLAG_UK='<svg class="flag" viewBox="0 0 30 21"><rect width="30" height="10.5" fill="#0057B8"/><rect y="10.5" width="30" height="10.5" fill="#FFD700"/></svg>';
+const FLAG_RU='<svg class="flag" viewBox="0 0 30 21"><rect width="30" height="7" fill="#ffffff"/><rect y="7" width="30" height="7" fill="#0039A6"/><rect y="14" width="30" height="7" fill="#D52B1E"/></svg>';
+const GLOBE='<span class="globe"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg></span>';
+const CHECK='<svg class="ck" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
 const I18N={
   ru:{
     app:"Календарь Вахт",setup:"Настройка графика",start:"Начало вахты",wd:"Дней вахты",rd:"Дней отдыха",
@@ -209,9 +257,13 @@ const I18N={
     month:"Месяц",year:"Год",lw:"Вахта",lr:"Отдых",lt:"Сегодня",
     cycle:"Текущий цикл",wl:"вахты",rl:"отдыха",shift:"Смена",dayOf:"День {x}|из {n}",
     next:"Следующая смена",nextRest:"начало отдыха",nextWork:"начало вахты",
-    nCal:"Календарь",nSet:"Настройки",nAbout:"О программе",lang:"Язык",auto:"Как в системе",
-    widgetT:"Виджет",widgetHint:"Чтобы добавить виджет: зажмите пустое место на рабочем столе, выберите «Виджеты» и найдите «Календарь вахт».",
-    aboutT:"Календарь вахт",aboutP:"Показывает график вахты и отдыха. Виджет на рабочем столе считает дни до вахты или до выходных и время до конца рабочего дня.",
+    settings:"Настройки",language:"Язык",langAuto:"Как в системе",theme:"Тема",
+    themeAuto:"Как в системе",themeLight:"Светлая",themeDark:"Тёмная",
+    widgetRefresh:"Частота обновления виджета",min:"мин",def:"по умолчанию",
+    refreshHint:"Время до конца смены в виджете идёт по часам телефона в реальном времени. Эта настройка определяет, как часто пересчитываются дни и дата. Чем чаще, тем быстрее расходуется заряд.",
+    about:"О программе",tagline:"Календарь смен и отдыха",version:"Версия",
+    aboutP:"Показывает график вахты и отдыха: какие дни рабочие, какие выходные, сколько осталось до смены.",
+    aboutW:"Чтобы добавить виджет: зажмите пустое место на рабочем столе, выберите «Виджеты» и найдите «Календарь вахт». Размер виджета можно менять: зажмите его и потяните за края.",
     noCfg:"Задайте график, чтобы увидеть цикл",
     days:["день","дня","дней"],
     months:["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"],
@@ -225,9 +277,13 @@ const I18N={
     month:"Місяць",year:"Рік",lw:"Вахта",lr:"Відпочинок",lt:"Сьогодні",
     cycle:"Поточний цикл",wl:"вахти",rl:"відпочинку",shift:"Зміна",dayOf:"День {x}|з {n}",
     next:"Наступна зміна",nextRest:"початок відпочинку",nextWork:"початок вахти",
-    nCal:"Календар",nSet:"Налаштування",nAbout:"Про програму",lang:"Мова",auto:"Як у системі",
-    widgetT:"Віджет",widgetHint:"Щоб додати віджет: затисніть порожнє місце на робочому столі, виберіть «Віджети» та знайдіть «Календар вахт».",
-    aboutT:"Календар вахт",aboutP:"Показує графік вахти та відпочинку. Віджет на робочому столі рахує дні до вахти або до вихідних і час до кінця робочого дня.",
+    settings:"Налаштування",language:"Мова",langAuto:"Як у системі",theme:"Тема",
+    themeAuto:"Як у системі",themeLight:"Світла",themeDark:"Темна",
+    widgetRefresh:"Частота оновлення віджета",min:"хв",def:"за замовчуванням",
+    refreshHint:"Час до кінця зміни у віджеті йде за годинником телефона в реальному часі. Це налаштування визначає, як часто перераховуються дні й дата. Чим частіше, тим швидше витрачається заряд.",
+    about:"Про програму",tagline:"Календар змін і відпочинку",version:"Версія",
+    aboutP:"Показує графік вахти та відпочинку: які дні робочі, які вихідні, скільки лишилось до зміни.",
+    aboutW:"Щоб додати віджет: затисніть порожнє місце на робочому столі, виберіть «Віджети» та знайдіть «Календар вахт». Розмір віджета можна змінювати: затисніть його й потягніть за краї.",
     noCfg:"Задайте графік, щоб побачити цикл",
     days:["день","дні","днів"],
     months:["Січень","Лютий","Березень","Квітень","Травень","Червень","Липень","Серпень","Вересень","Жовтень","Листопад","Грудень"],
@@ -235,11 +291,15 @@ const I18N={
     wdays:["Пн","Вт","Ср","Чт","Пт","Сб","Нд"]
   }
 };
+const INTERVALS=[1,5,10,15,30,60];
+const DEFAULT_INTERVAL=10;
 const KEY="vakhtCalendar.v2";
 const now0=new Date();
 let S={start:"",work:0,rest:0,ws:"",we:"",view:"month",year:now0.getFullYear(),month:now0.getMonth(),
-  theme:(window.matchMedia&&matchMedia("(prefers-color-scheme: light)").matches)?"light":"dark",lang:"auto"};
+  theme:"auto",lang:"auto",interval:DEFAULT_INTERVAL};
 try{const r=JSON.parse(localStorage.getItem(KEY)||"null");if(r)Object.assign(S,r)}catch(e){}
+if(["auto","light","dark"].indexOf(S.theme)<0)S.theme="auto";
+if(INTERVALS.indexOf(S.interval)<0)S.interval=DEFAULT_INTERVAL;
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 
 const $=id=>document.getElementById(id);
@@ -252,6 +312,7 @@ const T=()=>I18N[curLang()];
 const dayNum=(y,m,d)=>Math.floor(Date.UTC(y,m,d)/864e5);
 function parseISO(s){const p=(s||"").split("-").map(Number);return p.length===3&&p[0]?{y:p[0],m:p[1]-1,d:p[2]}:null}
 const f2=n=>String(n).padStart(2,"0");
+const iso=d=>d.getFullYear()+"-"+f2(d.getMonth()+1)+"-"+f2(d.getDate());
 const fmtDate=d=>f2(d.getDate())+"."+f2(d.getMonth()+1)+"."+d.getFullYear();
 function pl(n,f){const m=n%100,k=n%10;if(m>10&&m<20)return f[2];if(k===1)return f[0];if(k>1&&k<5)return f[1];return f[2]}
 const toMin=v=>(v&&/^\d\d:\d\d/.test(v))?parseInt(v.slice(0,2),10)*60+parseInt(v.slice(3,5),10):-1;
@@ -264,27 +325,31 @@ function pos(y,m,d){
 }
 const isWork=(y,m,d)=>cfgOk()&&pos(y,m,d)<S.work;
 
+/* ---------- Связь с Android ---------- */
 function sendToApp(){
-  try{
-    if(window.Android&&cfgOk())Android.saveSchedule(S.start,S.work,S.rest,toMin(S.ws),toMin(S.we));
-  }catch(e){}
+  try{if(window.Android&&cfgOk())Android.saveSchedule(S.start,S.work,S.rest,toMin(S.ws),toMin(S.we))}catch(e){}
+}
+function sendPrefs(){
+  try{if(window.Android)Android.setPrefs(S.lang,S.interval)}catch(e){}
 }
 
 /* ---------- Тема ---------- */
-const SUN='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f5a524" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2" fill="#f5a524"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>';
-const MOON='<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a.7.7 0 0 0-.9-.9A9.5 9.5 0 1 0 21.4 15.1a.7.7 0 0 0-.9-.9z"/></svg>';
+function sysDark(){
+  try{if(window.Android&&typeof Android.isSystemDark==="function")return !!Android.isSystemDark()}catch(e){}
+  return !!(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);
+}
 function applyTheme(){
-  document.documentElement.dataset.theme=S.theme;
-  $("themeBtn").innerHTML=S.theme==="dark"?MOON:SUN;
-  try{if(window.Android)Android.setTheme(S.theme==="dark")}catch(e){}
+  const th=S.theme==="auto"?(sysDark()?"dark":"light"):S.theme;
+  document.documentElement.dataset.theme=th;
+  try{if(window.Android)Android.setTheme(th==="dark")}catch(e){}
 }
 
-/* ---------- Статические тексты ---------- */
+/* ---------- Тексты ---------- */
 function applyLang(){
   const t=T();
   document.documentElement.lang=curLang();
   document.querySelectorAll("[data-i]").forEach(el=>{const k=el.getAttribute("data-i");if(t[k]!==undefined)el.textContent=t[k]});
-  const sel=$("langSel");sel.options[0].textContent=t.auto;sel.value=S.lang;
+  renderSettings();
 }
 
 /* ---------- Календарь ---------- */
@@ -294,7 +359,7 @@ function tile(d,inMonth,ty,tm,td){
   if(cfgOk())c+=isWork(y,m,n)?" work":" rest";
   if(!inMonth)c+=" out";
   if(y===ty&&m===tm&&n===td)c+=" today";
-  return '<div class="'+c+'">'+n+'<i></i></div>';
+  return '<div class="'+c+'" data-date="'+iso(d)+'">'+n+'<i></i></div>';
 }
 function renderCal(){
   const t=T(),box=$("cal"),now=new Date(),ty=now.getFullYear(),tm=now.getMonth(),td=now.getDate();
@@ -343,10 +408,44 @@ function renderInfo(){
   const dayOf=t.dayOf.replace("{x}",x).replace("{n}",tot).split("|").join("<br>");
   el.innerHTML=
     '<div class="card row-card"><div class="ic">'+ICON_CAL+'</div><div class="rc-m"><b>'+t.cycle+'</b><span>'+S.work+' '+pl(S.work,t.days)+' '+t.wl+' / '+S.rest+' '+pl(S.rest,t.days)+' '+t.rl+'</span>'+hrs+'</div><div class="rc-r">'+ring+'<div>'+dayOf+'</div></div></div>'+
-    '<div class="card row-card go" id="goNext" data-y="'+nd.getFullYear()+'" data-m="'+nd.getMonth()+'"><div class="ic">'+ICON_CLOCK+'</div><div class="rc-m"><b>'+t.next+'</b><span>'+fmtDate(nd)+' ('+(working?t.nextRest:t.nextWork)+')</span></div>'+ICON_CHEV+'</div>';
+    '<div class="card row-card go" id="goNext" data-date="'+iso(nd)+'" data-y="'+nd.getFullYear()+'" data-m="'+nd.getMonth()+'"><div class="ic">'+ICON_CLOCK+'</div><div class="rc-m"><b>'+t.next+'</b><span>'+fmtDate(nd)+' ('+(working?t.nextRest:t.nextWork)+')</span></div>'+ICON_CHEV+'</div>';
+}
+
+/* ---------- Настройки ---------- */
+function renderSettings(){
+  const t=T();
+  const lang=[["auto",GLOBE,t.langAuto],["ru",FLAG_RU,"Русский"],["uk",FLAG_UK,"Українська"]];
+  $("langOpts").innerHTML=lang.map(l=>'<button class="opt'+(S.lang===l[0]?" on":"")+'" data-lang="'+l[0]+'">'+l[1]+'<span>'+l[2]+'</span>'+CHECK+'</button>').join("");
+  const th=[["auto",t.themeAuto],["light",t.themeLight],["dark",t.themeDark]];
+  $("themeOpts").innerHTML=th.map(o=>'<button class="opt'+(S.theme===o[0]?" on":"")+'" data-theme="'+o[0]+'"><span>'+o[1]+'</span></button>').join("");
+  $("intSel").innerHTML=INTERVALS.map(n=>'<option value="'+n+'"'+(S.interval===n?" selected":"")+'>'+n+' '+t.min+(n===DEFAULT_INTERVAL?' ('+t.def+')':'')+'</option>').join("");
 }
 
 function render(){applyLang();renderCal();renderInfo()}
+
+/* ---------- Окна ---------- */
+function openOv(id){$(id).classList.add("on")}
+function closeOv(id){$(id).classList.remove("on")}
+window.closeTop=function(){
+  if($("ovAbout").classList.contains("on")){closeOv("ovAbout");return true}
+  if($("ovSet").classList.contains("on")){closeOv("ovSet");return true}
+  return false;
+};
+$("gearBtn").onclick=()=>openOv("ovSet");
+$("xSet").onclick=()=>closeOv("ovSet");
+$("xAbout").onclick=()=>closeOv("ovAbout");
+$("openAbout").onclick=()=>openOv("ovAbout");
+["ovSet","ovAbout"].forEach(id=>$(id).addEventListener("click",e=>{if(e.target===$(id))closeOv(id)}));
+
+$("langOpts").addEventListener("click",e=>{
+  const b=e.target.closest("[data-lang]");if(!b)return;
+  S.lang=b.dataset.lang;save();sendPrefs();render();
+});
+$("themeOpts").addEventListener("click",e=>{
+  const b=e.target.closest("[data-theme]");if(!b)return;
+  S.theme=b.dataset.theme;save();applyTheme();renderSettings();
+});
+$("intSel").onchange=e=>{S.interval=parseInt(e.target.value,10);save();sendPrefs()};
 
 /* ---------- События ---------- */
 $("apply").onclick=()=>{
@@ -368,8 +467,6 @@ function step(n){
 }
 $("prev").onclick=()=>step(-1);
 $("next").onclick=()=>step(1);
-$("themeBtn").onclick=()=>{S.theme=S.theme==="dark"?"light":"dark";save();applyTheme()};
-$("langSel").onchange=e=>{S.lang=e.target.value;save();render()};
 
 // тап по месяцу в режиме «Год» открывает этот месяц
 $("cal").addEventListener("click",e=>{
@@ -379,20 +476,28 @@ $("cal").addEventListener("click",e=>{
   S.month=parseInt(el.dataset.m,10);S.view="month";
   save();render();$("calCard").scrollIntoView({behavior:"smooth",block:"start"});
 });
-// тап по «Следующая смена» открывает месяц этой даты
+
+// мигание даты
+function blinkDate(dateIso){
+  const tile=document.querySelector('#cal .t[data-date="'+dateIso+'"]');
+  if(!tile)return;
+  tile.classList.remove("blink");
+  void tile.offsetWidth;
+  tile.classList.add("blink");
+  setTimeout(()=>tile.classList.remove("blink"),4300);
+}
+// тап по «Следующая смена»: открыть месяц этой даты и помигать ею
 $("info").addEventListener("click",e=>{
   const el=e.target.closest("#goNext");
   if(!el)return;
+  const dateIso=el.dataset.date;
   S.year=parseInt(el.dataset.y,10);S.month=parseInt(el.dataset.m,10);S.view="month";
-  save();render();$("calCard").scrollIntoView({behavior:"smooth",block:"start"});
+  save();render();
+  $("calCard").scrollIntoView({behavior:"smooth",block:"start"});
+  setTimeout(()=>blinkDate(dateIso),450);
 });
-// нижнее меню
-document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
-  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===b));
-  document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id===b.dataset.tab));
-  window.scrollTo(0,0);
-});
-document.addEventListener("visibilitychange",()=>{if(!document.hidden)render()});
+
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){applyTheme();renderCal();renderInfo()}});
 
 // старт
 $("start").value=S.start||"";
@@ -400,7 +505,7 @@ $("work").value=S.work||"";
 $("rest").value=S.rest||"";
 $("ws").value=S.ws||"";
 $("we").value=S.we||"";
-applyTheme();render();sendToApp();
+applyTheme();render();sendPrefs();sendToApp();
 </script>
 </body>
 </html>
